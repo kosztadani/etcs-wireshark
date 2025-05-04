@@ -1,0 +1,6 @@
+# Gradle and Java
+/build
+/.gradle
+/buildSrc/.gradle
+/buildSrc/build
+/mdb-to-pcapng/build
