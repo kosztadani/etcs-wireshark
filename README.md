@@ -30,10 +30,45 @@ PCAPNG files into one:
 mergecap -a /path/to/*.pcapng -w all.pcapng
 ```
 
+## Wireshark plugin
+
+Supported Wireshark version: 4.4.
+
+### Building the plugin
+
+To build the plugin, assuming that you have installed the Wireshark headers
+and all necessary dependencies:
+
+```bash
+./build.sh
+```
+
+If you have Docker, you can use a plugin builder image that I have put together.
+This builds the plugin both for Linux and for Windows:
+
+```bash
+./build-in-docker.sh
+```
+
+The built files are installed into `wireshark-config/my-plugins`.
+
+### Using the plugin
+
+You can use the included starter script which will load the plugin and a
+Wireshark profile:
+
+```bash
+./wireshark.sh
+```
+
 ## License
 
 The Java application is released into the public domain.
 See [LICENSE.CC0-1.0](LICENSE.CC0-1.0).
+
+Wireshark is licensed under GPLv2 and plugins are considered to be derivative works.
+Therefore, GPLv2 also applies to the source code of this plugin.
+See [LICENSE.GPL-2.0-only](LICENSE.GPL-2.0-only).
 
 ## Repository maintenance
 

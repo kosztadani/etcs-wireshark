@@ -1,0 +1,5 @@
+####### Name Resolution ########
+
+# Resolve IPv4, IPv6, and IPX addresses into host names. The next set of check boxes determines how name resolution should be performed. If no other options are checked name resolution is made from Wireshark's host file and capture file name resolution blocks.
+# true or false (case-insensitive)
+nameres.network_name: TRUE

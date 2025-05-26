@@ -1,6 +1,13 @@
-# Gradle and Java
+# Common
 /build
+
+# Gradle and Java
 /.gradle
 /buildSrc/.gradle
 /buildSrc/build
 /mdb-to-pcapng/build
+
+# C and Wireshark
+/wireshark-config/*
+!/wireshark-config/decode_as_entries
+!/wireshark-config/preferences
