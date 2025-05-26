@@ -36,7 +36,10 @@ mergecap -a /path/to/*.pcapng -w all.pcapng
 
 ## Wireshark plugin
 
-Supported Wireshark version: 4.4.
+Supported Wireshark versions:
+
+- Linux: 4.0, 4.2, 4.4
+- Windows: 4.2, 4.4
 
 ### Building the plugin
 

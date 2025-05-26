@@ -1,12 +1,17 @@
 #include <ws_version.h>
 
-#if WIRESHARK_VERSION_MAJOR != 4 || WIRESHARK_VERSION_MINOR != 4
-#warning "Only tested with Wireshark version 4.4"
+#if (WIRESHARK_VERSION_MAJOR != 4 || (WIRESHARK_VERSION_MINOR != 0 && WIRESHARK_VERSION_MINOR != 2 && WIRESHARK_VERSION_MINOR != 4))
+#warning "Only tested with Wireshark versions 4.0, 4.2, 4.4"
 #endif
 
 #define WS_BUILD_DLL
 
+#if (WIRESHARK_VERSION_MAJOR == 4 && WIRESHARK_VERSION_MINOR >= 4) || WIRESHARK_VERSION_MAJOR >= 5
 #include <wsutil/plugins.h>
+#else
+#define WS_PLUGIN_DESC_DISSECTOR    (1UL << 0)
+#endif
+
 #include <epan/packet.h>
 #include <epan/conversation.h>
 #include <epan/expert.h>
@@ -36,13 +41,13 @@ static int proto_etcs_loop;
 
 static int proto_etcs_radio;
 
-static int ett_etcs_balise;
+static int ett_etcs_balise = -1;
 
-static int ett_etcs_loop;
+static int ett_etcs_loop = -1;
 
-static int ett_etcs_radio;
+static int ett_etcs_radio = -1;
 
-static int ett_etcs_radio_message;
+static int ett_etcs_radio_message = -1;
 
 static int hf_etcs_version;
 

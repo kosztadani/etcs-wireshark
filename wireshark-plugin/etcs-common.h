@@ -1,6 +1,12 @@
 #ifndef ETCS_COMMON_H
 #define ETCS_COMMON_H
 
+#if (WIRESHARK_VERSION_MAJOR == 4 && WIRESHARK_VERSION_MINOR >= 4) || WIRESHARK_VERSION_MAJOR >= 5
+#include <wsutil/array.h>
+#else
+#include <epan/packet.h>
+#endif
+
 #include <stdint.h>
 
 static bool tvb_bits_exist(const tvbuff_t *tvb, const unsigned offset, const unsigned length) {

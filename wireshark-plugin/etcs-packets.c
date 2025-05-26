@@ -1,7 +1,5 @@
 #include "etcs-common.h"
 
-#include <wsutil/array.h>
-
 #define DISSECTOR_PACKET_TO_TRAIN(id) static etcs_packet_dissected_t dissect_packet_to_train_ ## id (tvbuff_t *tvb, proto_tree *tree, unsigned *offset, _U_ etcs_version_t version)
 
 #define DISSECTOR_PACKET_TO_TRACK(id) static etcs_packet_dissected_t dissect_packet_to_track_ ## id (tvbuff_t *tvb, proto_tree *tree, unsigned *offset, _U_ etcs_version_t version)
@@ -14,7 +12,7 @@
         id, \
         PACKET_ITEM_NAME(id, name), \
         0, \
-        0, \
+        -1, \
         "etcs.train_to_track.packet_" #id, \
         dissect_packet_to_track_ ## id \
 }
@@ -23,7 +21,7 @@
         id, \
         PACKET_ITEM_NAME(id, name), \
         0, \
-        0, \
+        -1, \
         "etcs.track_to_train.packet_" #id, \
         dissect_packet_to_train_ ## id \
 }
@@ -1806,7 +1804,7 @@ static etcs_packet_t etcs_unknown_packet_to_train = {
         0, // dummy value
         "Unknown packet",
         0,
-        0,
+        -1,
         "etcs.track_to_train.unknown_packet",
         NULL
 };
@@ -1815,7 +1813,7 @@ static etcs_packet_t etcs_unknown_packet_to_track = {
         0, // dummy value
         "Unknown packet",
         0,
-        0,
+        -1,
         "etcs.train_to_track.unknown_packet",
         NULL
 };

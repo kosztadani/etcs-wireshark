@@ -1,7 +1,5 @@
 #include "etcs-common.h"
 
-#include <wsutil/array.h>
-
 #define DISSECTOR_MESSAGE(id) static void dissect_message_ ## id (tvbuff_t *tvb, proto_tree *tree, unsigned *offset, _U_ etcs_version_t version)
 
 #define DISSECTOR_MESSAGE_TO_TRAIN_NO_VARS(id) DISSECTOR_MESSAGE(id) { \
