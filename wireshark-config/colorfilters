@@ -1,0 +1,7 @@
+# This file was created by Wireshark. Edit with care.
+@Malformed@_ws.malformed || etcs.experts.inconsistent_l_packet@[65535,49087,49087][8995,9766,10537]
+@Unknown packet or message@etcs.experts.unknown_message || etcs.experts.unknown_packet@[65535,65535,32639][8995,9766,10537]
+@Unknown version@etcs.experts.unknown_version@[65535,65535,32639][8995,9766,10537]
+@ETCS balise@etcs.balise@[64250,65535,62965][4626,10023,11822]
+@ETCS loop@etcs.loop@[60652,65535,55255][4626,10023,11822]
+@ETCS radio@etcs.radio@[53970,65535,42405][4626,10023,11822]

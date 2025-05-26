@@ -10,4 +10,6 @@
 # C and Wireshark
 /wireshark-config/*
 !/wireshark-config/decode_as_entries
+!/wireshark-config/dfilter_buttons
+!/wireshark-config/colorfilters
 !/wireshark-config/preferences

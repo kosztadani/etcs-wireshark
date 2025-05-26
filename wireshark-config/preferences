@@ -1,3 +1,28 @@
+####### User Interface: Columns ########
+
+# Packet list hidden columns
+# List all column indices (1-indexed) to hide in the packet list.
+gui.column.hide: 6,7,8,9
+
+# Packet list hidden column formats (deprecated)
+# List all column formats to hide in the packet list. Deprecated in favor of the index-based preference.
+gui.column.hidden: %L,%Cus:etcs.var.M_VERSION:0:U,%Cus:etcs.var.M_VERSION / 16:0:U,%Cus:etcs.var.M_VERSION & 0b1111:0:U
+
+# Packet list column format
+# Each pair of strings consists of a column title and its format
+gui.column.format:
+	"No.", "%m",
+	"Source", "%s",
+	"Destination", "%d",
+	"Protocol", "%p",
+	"Version", "%Cus:etcs.version:0:U",
+	"Length", "%L",
+	"M_VERSION", "%Cus:etcs.var.M_VERSION:0:U",
+	"v[0]", "%Cus:etcs.var.M_VERSION / 16:0:U",
+	"v[1]", "%Cus:etcs.var.M_VERSION & 0b1111:0:U",
+	"Info", "%i",
+	"Comment", "%Cus:frame.comment:0:U"
+
 ####### Name Resolution ########
 
 # Resolve IPv4, IPv6, and IPX addresses into host names. The next set of check boxes determines how name resolution should be performed. If no other options are checked name resolution is made from Wireshark's host file and capture file name resolution blocks.
