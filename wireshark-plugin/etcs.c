@@ -1,7 +1,12 @@
 #include <ws_version.h>
 
-#if (WIRESHARK_VERSION_MAJOR != 4 || (WIRESHARK_VERSION_MINOR != 0 && WIRESHARK_VERSION_MINOR != 2 && WIRESHARK_VERSION_MINOR != 4))
-#warning "Only tested with Wireshark versions 4.0, 4.2, 4.4"
+#if (WIRESHARK_VERSION_MAJOR != 4 || ( \
+    WIRESHARK_VERSION_MINOR != 0 && \
+    WIRESHARK_VERSION_MINOR != 2 && \
+    WIRESHARK_VERSION_MINOR != 4 && \
+    WIRESHARK_VERSION_MINOR != 6 \
+))
+#warning "Only tested with Wireshark versions 4.0, 4.2, 4.4, 4.6"
 #endif
 
 #define WS_BUILD_DLL
@@ -335,7 +340,7 @@ static int dissect_etcs_balise(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tr
                 nid_bg,
                 n_pig + 1,
                 n_total + 1,
-                val_to_str(m_dup, m_dup_values, "unknown M_DUP")
+                val_to_str_compat(m_dup, m_dup_values, "unknown M_DUP")
         );
         wmem_list_t *packet_ids = dissect_packets(tvb, pinfo, ti, &offset, MESSAGE_TRACK_TO_TRAIN, etcs_version);
         append_packet_list(packet_ids, pinfo);
@@ -383,7 +388,7 @@ static int dissect_etcs_radio(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tre
                 COL_INFO,
                 "Euroradio: message %" PRIu8 " (%s)",
                 nid_message,
-                val_to_str(nid_message, etcs_nid_message_values, "unknown")
+                val_to_str_compat(nid_message, etcs_nid_message_values, "unknown")
         );
         const int byte_offset_start = (int) offset / 8;
         const etcs_version_t etcs_version = get_etcs_version(tvb, pinfo, nid_message);

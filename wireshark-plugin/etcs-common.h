@@ -7,7 +7,19 @@
 #include <epan/packet.h>
 #endif
 
+#if (WIRESHARK_VERSION_MAJOR == 4 && WIRESHARK_VERSION_MINOR >= 6) || WIRESHARK_VERSION_MAJOR > 4
+#include <epan/wmem_scopes.h>
+#endif
+
 #include <stdint.h>
+
+static const char *val_to_str_compat(const uint32_t val, const value_string *vs, const char *fmt) {
+#if (WIRESHARK_VERSION_MAJOR == 4 && WIRESHARK_VERSION_MINOR >= 6) || WIRESHARK_VERSION_MAJOR > 4
+        return val_to_str(wmem_epan_scope(), val, vs, fmt);
+#else
+        return val_to_str(val, vs, fmt);
+#endif
+}
 
 static bool tvb_bits_exist(const tvbuff_t *tvb, const unsigned offset, const unsigned length) {
         const int last_byte = (offset + length - 1) / 8;
