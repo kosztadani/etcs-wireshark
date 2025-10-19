@@ -32,7 +32,13 @@ add_compile_definitions(
 	$<$<BOOL:${HAVE_SSIZE_T}>:HAVE_SSIZE_T>
 )
 
-add_library(${WIRESHARK_PLUGIN_NAME} MODULE "wireshark-plugin/${WIRESHARK_PLUGIN_NAME}.c")
+add_library(${WIRESHARK_PLUGIN_NAME} MODULE wireshark-plugin/etcs.c
+	wireshark-plugin/etcs-common.c
+	wireshark-plugin/etcs-messages.c
+	wireshark-plugin/etcs-packets.c
+	wireshark-plugin/etcs-vars.c
+)
+
 set_target_properties(${WIRESHARK_PLUGIN_NAME} PROPERTIES PREFIX "" DEFINE_SYMBOL "")
 target_link_libraries(${WIRESHARK_PLUGIN_NAME} epan)
 

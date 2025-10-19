@@ -1,4 +1,7 @@
+#include "etcs-packets.h"
+
 #include "etcs-common.h"
+#include "etcs-vars.h"
 
 #define DISSECTOR_PACKET_TO_TRAIN(id) static etcs_packet_dissected_t dissect_packet_to_train_ ## id (tvbuff_t *tvb, proto_tree *tree, unsigned *offset, _U_ etcs_version_t version)
 
@@ -27,6 +30,8 @@
 }
 
 static void initialize_packets(etcs_packet_t packets[], size_t size, etcs_packet_t *lookup[]);
+
+static void register_packet(etcs_packet_t *pack, hf_register_info *destination);
 
 DISSECTOR_PACKET_TO_TRAIN(0) {
         DISSECT_VAR(NID_PACKET);
@@ -1785,7 +1790,7 @@ static etcs_packet_t etcs_packets_to_track_raw[] = {
 
 static etcs_packet_t *etcs_packets_to_track[256];
 
-static void init_packet_info() {
+void init_packet_info(void) {
         initialize_packets(etcs_packets_to_train_raw, array_length(etcs_packets_to_train_raw), etcs_packets_to_train);
         initialize_packets(etcs_packets_to_track_raw, array_length(etcs_packets_to_track_raw), etcs_packets_to_track);
 }
@@ -1817,3 +1822,63 @@ static etcs_packet_t etcs_unknown_packet_to_track = {
         "etcs.train_to_track.unknown_packet",
         NULL
 };
+
+const etcs_packet_t *etcs_packet_to_track_by_nid_packet(const uint8_t nid_packet) {
+        return etcs_packets_to_track[nid_packet];
+}
+
+const etcs_packet_t *etcs_packet_to_train_by_nid_packet(const uint8_t nid_packet) {
+        return etcs_packets_to_train[nid_packet];
+}
+
+const etcs_packet_t *etcs_packet_to_track_unknown(void) {
+        return &etcs_unknown_packet_to_track;
+}
+
+const etcs_packet_t *etcs_packet_to_train_unknown(void) {
+        return &etcs_unknown_packet_to_train;
+}
+
+void etcs_register_packets(const int proto) {
+        static hf_register_info hf[2
+                                   + array_length(etcs_packets_to_track_raw)
+                                   + array_length(etcs_packets_to_train_raw)
+        ];
+        static int *ett[2
+                        + array_length(etcs_packets_to_track_raw)
+                        + array_length(etcs_packets_to_train_raw)
+        ];
+        int hf_index = 0;
+        int ett_index = 0;
+        register_packet(&etcs_unknown_packet_to_track, &hf[hf_index++]);
+        register_packet(&etcs_unknown_packet_to_train, &hf[hf_index++]);
+        ett[ett_index++] = &etcs_unknown_packet_to_track.wireshark_ett;
+        ett[ett_index++] = &etcs_unknown_packet_to_train.wireshark_ett;
+        for (size_t i = 0; i < array_length(etcs_packets_to_train_raw); i++) {
+                etcs_packet_t *pack = &etcs_packets_to_train_raw[i];
+                register_packet(pack, &hf[hf_index++]);
+                ett[ett_index++] = &pack->wireshark_ett;
+        }
+        for (size_t i = 0; i < array_length(etcs_packets_to_track_raw); i++) {
+                etcs_packet_t *pack = &etcs_packets_to_track_raw[i];
+                register_packet(pack, &hf[hf_index++]);
+                ett[ett_index++] = &pack->wireshark_ett;
+        }
+        proto_register_field_array(proto, hf, array_length(hf));
+        proto_register_subtree_array(ett, array_length(ett));
+}
+
+static void register_packet(etcs_packet_t *pack, hf_register_info *destination) {
+        *destination = (hf_register_info){
+                &pack->wireshark_hf, {
+                        pack->name,
+                        pack->wireshark_abbreviation,
+                        FT_NONE,
+                        BASE_NONE,
+                        NULL,
+                        0x0,
+                        NULL,
+                        HFILL
+                }
+        };
+}

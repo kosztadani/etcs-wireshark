@@ -1,10 +1,10 @@
 #include <ws_version.h>
 
 #if (WIRESHARK_VERSION_MAJOR != 4 || ( \
-    WIRESHARK_VERSION_MINOR != 0 && \
-    WIRESHARK_VERSION_MINOR != 2 && \
-    WIRESHARK_VERSION_MINOR != 4 && \
-    WIRESHARK_VERSION_MINOR != 6 \
+WIRESHARK_VERSION_MINOR != 0 && \
+WIRESHARK_VERSION_MINOR != 2 && \
+WIRESHARK_VERSION_MINOR != 4 && \
+WIRESHARK_VERSION_MINOR != 6 \
 ))
 #warning "Only tested with Wireshark versions 4.0, 4.2, 4.4, 4.6"
 #endif
@@ -25,10 +25,9 @@
 #include "etcs.h"
 
 #include "etcs-common.h"
-
-#include "etcs-vars.c"
-#include "etcs-packets.c"
-#include "etcs-messages.c"
+#include "etcs-vars.h"
+#include "etcs-packets.h"
+#include "etcs-messages.h"
 
 #ifndef VERSION
 #define VERSION "0.0.0"
@@ -96,14 +95,10 @@ static void add_protocol_version(tvbuff_t *tvb, packet_info *pinfo, proto_tree *
 
 static bool is_version_supported(etcs_version_t version);
 
-static void register_packet(etcs_packet_t *pack, hf_register_info *destination);
-
-static void register_message(etcs_message_t *message, hf_register_info *destination);
-
 static wmem_list_t *dissect_packets(tvbuff_t *tvb, packet_info *pinfo, proto_item *tree, unsigned *offset,
                                     etcs_message_direction_t direction, etcs_version_t version);
 
-static etcs_packet_t *get_packet(uint8_t nid_packet, etcs_message_direction_t direction);
+static const etcs_packet_t *get_packet(uint8_t nid_packet, etcs_message_direction_t direction);
 
 static void append_packet_list(const wmem_list_t *packet_ids, const packet_info *pinfo);
 
@@ -133,21 +128,10 @@ static void proto_register_etcs(void) {
 }
 
 static void register_fields_and_subtrees(void) {
-        static hf_register_info hf[4
-                                   + array_length(etcs_variables)
-                                   + array_length(etcs_packets_to_train_raw)
-                                   + array_length(etcs_packets_to_track_raw)
-                                   + array_length(etcs_messages_raw)
-        ];
-        static int *ett[6
-                        + array_length(etcs_packets_to_train_raw)
-                        + array_length(etcs_packets_to_track_raw)
-        ];
+        static hf_register_info hf[1];
+        static int *ett[4];
         int hf_index = 0;
         int ett_index = 0;
-        register_packet(&etcs_unknown_packet_to_train, &hf[hf_index++]);
-        register_packet(&etcs_unknown_packet_to_track, &hf[hf_index++]);
-        register_message(&etcs_unknown_message, &hf[hf_index++]);
         hf[hf_index++] = (hf_register_info){
                 &hf_etcs_version,
                 {
@@ -165,31 +149,14 @@ static void register_fields_and_subtrees(void) {
         ett[ett_index++] = &ett_etcs_loop;
         ett[ett_index++] = &ett_etcs_radio;
         ett[ett_index++] = &ett_etcs_radio_message;
-        ett[ett_index++] = &etcs_unknown_packet_to_train.wireshark_ett;
-        ett[ett_index++] = &etcs_unknown_packet_to_track.wireshark_ett;
-        for (size_t i = 0; i < array_length(etcs_variables); i++) {
-                etcs_variable_t *var = &etcs_variables[i];
-                register_var(var, &hf[hf_index++]);
-        }
-        for (size_t i = 0; i < array_length(etcs_packets_to_train_raw); i++) {
-                etcs_packet_t *pack = &etcs_packets_to_train_raw[i];
-                register_packet(pack, &hf[hf_index++]);
-                ett[ett_index++] = &pack->wireshark_ett;
-        }
-        for (size_t i = 0; i < array_length(etcs_packets_to_track_raw); i++) {
-                etcs_packet_t *pack = &etcs_packets_to_track_raw[i];
-                register_packet(pack, &hf[hf_index++]);
-                ett[ett_index++] = &pack->wireshark_ett;
-        }
-        for (size_t i = 0; i < array_length(etcs_messages_raw); i++) {
-                etcs_message_t *message = &etcs_messages_raw[i];
-                register_message(message, &hf[hf_index++]);
-        }
         proto_etcs = proto_register_protocol(
                 "European Train Control System",
                 "ETCS",
                 "etcs"
         );
+        etcs_register_variables(proto_etcs);
+        etcs_register_packets(proto_etcs);
+        etcs_register_messages(proto_etcs);
         proto_register_field_array(proto_etcs, hf, array_length(hf));
         proto_register_subtree_array(ett, array_length(ett));
         proto_etcs_balise = proto_register_protocol(
@@ -207,36 +174,6 @@ static void register_fields_and_subtrees(void) {
                 "ETCS-RADIO",
                 "etcs.radio"
         );
-}
-
-static void register_packet(etcs_packet_t *pack, hf_register_info *destination) {
-        *destination = (hf_register_info){
-                &pack->wireshark_hf, {
-                        pack->name,
-                        pack->wireshark_abbreviation,
-                        FT_NONE,
-                        BASE_NONE,
-                        NULL,
-                        0x0,
-                        NULL,
-                        HFILL
-                }
-        };
-}
-
-static void register_message(etcs_message_t *message, hf_register_info *destination) {
-        *destination = (hf_register_info){
-                &message->wireshark_hf, {
-                        message->wireshark_name,
-                        message->wireshark_abbreviation,
-                        FT_NONE,
-                        BASE_NONE,
-                        NULL,
-                        0x0,
-                        NULL,
-                        HFILL
-                }
-        };
 }
 
 static void register_experts(void) {
@@ -388,14 +325,14 @@ static int dissect_etcs_radio(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tre
                 COL_INFO,
                 "Euroradio: message %" PRIu8 " (%s)",
                 nid_message,
-                val_to_str_compat(nid_message, etcs_nid_message_values, "unknown")
+                val_to_str_compat(nid_message, etcs_message_names(), "unknown")
         );
         const int byte_offset_start = (int) offset / 8;
         const etcs_version_t etcs_version = get_etcs_version(tvb, pinfo, nid_message);
         add_protocol_version(tvb, pinfo, sub, etcs_version);
-        const etcs_message_t *message = etcs_messages[nid_message];
+        const etcs_message_t *message = etcs_message_by_nid(nid_message);
         if (message == NULL) {
-                message = &etcs_unknown_message;
+                message = etcs_message_unknown();
         }
         proto_item *message_item = proto_tree_add_item(
                 sub,
@@ -405,7 +342,7 @@ static int dissect_etcs_radio(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tre
                 -1,
                 ENC_NA
         );
-        if (message == &etcs_unknown_message) {
+        if (message == etcs_message_unknown()) {
                 expert_add_info_format(
                         pinfo,
                         message_item,
@@ -629,7 +566,7 @@ static wmem_list_t *dissect_packets(tvbuff_t *tvb, packet_info *pinfo, proto_tre
                         ENC_NA
                 );
                 proto_tree *packet_tree = proto_item_add_subtree(packet_item, packet->wireshark_ett);
-                if (packet == &etcs_unknown_packet_to_track || packet == &etcs_unknown_packet_to_train) {
+                if (packet == etcs_packet_to_track_unknown() || packet == etcs_packet_to_train_unknown()) {
                         expert_add_info_format(
                                 pinfo,
                                 packet_item,
@@ -661,19 +598,19 @@ static wmem_list_t *dissect_packets(tvbuff_t *tvb, packet_info *pinfo, proto_tre
         return packet_ids;
 }
 
-static etcs_packet_t *get_packet(const uint8_t nid_packet, const etcs_message_direction_t direction) {
-        etcs_packet_t *result = NULL;
+static const etcs_packet_t *get_packet(const uint8_t nid_packet, const etcs_message_direction_t direction) {
+        const etcs_packet_t *result = NULL;
         switch (direction) {
                 case MESSAGE_TRACK_TO_TRAIN:
-                        result = etcs_packets_to_train[nid_packet];
+                        result = etcs_packet_to_train_by_nid_packet(nid_packet);
                         if (result == NULL) {
-                                result = &etcs_unknown_packet_to_train;
+                                result = etcs_packet_to_train_unknown();
                         }
                         break;
                 case MESSAGE_TRAIN_TO_TRACK:
-                        result = etcs_packets_to_track[nid_packet];
+                        result = etcs_packet_to_track_by_nid_packet(nid_packet);
                         if (result == NULL) {
-                                result = &etcs_unknown_packet_to_track;
+                                result = etcs_packet_to_track_unknown();
                         }
                         break;
                 case MESSAGE_ANY_DIRECTION:

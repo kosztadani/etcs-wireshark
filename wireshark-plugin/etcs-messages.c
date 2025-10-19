@@ -1,4 +1,7 @@
+#include "etcs-messages.h"
+
 #include "etcs-common.h"
+#include "etcs-vars.h"
 
 #define DISSECTOR_MESSAGE(id) static void dissect_message_ ## id (tvbuff_t *tvb, proto_tree *tree, unsigned *offset, _U_ etcs_version_t version)
 
@@ -36,6 +39,8 @@
         "etcs.radio.message_" #id, \
         dissect_message_ ## id \
 }
+
+static void register_message(etcs_message_t *message, hf_register_info *destination);
 
 DISSECTOR_MESSAGE_TO_TRACK_NO_VARS(129)
 
@@ -367,7 +372,17 @@ static etcs_message_t *etcs_messages[256];
 
 static value_string etcs_nid_message_values[array_length(etcs_messages_raw) + 1];
 
-static void init_message_info(void) {
+static etcs_message_t etcs_unknown_message = {
+        0, // dummy value,
+        "Unknown message",
+        "Unknown message",
+        MESSAGE_ANY_DIRECTION,
+        0,
+        "etcs.unknown_message",
+        NULL
+};
+
+void init_message_info(void) {
         for (size_t i = 0; i < array_length(etcs_messages); i++) {
                 etcs_messages[i] = NULL;
         }
@@ -386,12 +401,42 @@ static void init_message_info(void) {
         etcs_nid_message_values[array_length(etcs_messages_raw)] = terminator;
 }
 
-static etcs_message_t etcs_unknown_message = {
-        0, // dummy value,
-        "Unknown message",
-        "Unknown message",
-        MESSAGE_ANY_DIRECTION,
-        0,
-        "etcs.unknown_message",
-        NULL
-};
+void etcs_register_messages(const int proto) {
+        static hf_register_info hf[1
+                                   + array_length(etcs_messages_raw)
+        ];
+        int hf_index = 0;
+        register_message(&etcs_unknown_message, &hf[hf_index++]);
+        for (size_t i = 0; i < array_length(etcs_messages_raw); i++) {
+                etcs_message_t *message = &etcs_messages_raw[i];
+                register_message(message, &hf[hf_index++]);
+        }
+        proto_register_field_array(proto, hf, array_length(hf));
+}
+
+static void register_message(etcs_message_t *message, hf_register_info *destination) {
+        *destination = (hf_register_info){
+                &message->wireshark_hf, {
+                        message->wireshark_name,
+                        message->wireshark_abbreviation,
+                        FT_NONE,
+                        BASE_NONE,
+                        NULL,
+                        0x0,
+                        NULL,
+                        HFILL
+                }
+        };
+}
+
+const etcs_message_t *etcs_message_by_nid(const uint8_t nid_message) {
+        return etcs_messages[nid_message];
+}
+
+const etcs_message_t *etcs_message_unknown(void) {
+        return &etcs_unknown_message;
+}
+
+const value_string *etcs_message_names(void) {
+        return etcs_nid_message_values;
+}

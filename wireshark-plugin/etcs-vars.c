@@ -1,257 +1,14 @@
-#include "etcs-common.h"
+#include "etcs-vars.h"
 
-/**
- * This must be kept in sync with the field initialization below.
- */
-typedef enum {
-        VAR_A_NVMAXREDADH1,
-        VAR_A_NVMAXREDADH2,
-        VAR_A_NVMAXREDADH3,
-        VAR_A_NVP12,
-        VAR_A_NVP23,
-        VAR_D_ADHESION,
-        VAR_D_AXLELOAD,
-        VAR_D_CURRENT,
-        VAR_D_CYCLOC,
-        VAR_D_DP,
-        VAR_D_EMERGENCYSTOP,
-        VAR_D_ENDTIMERSTARTLOC,
-        VAR_D_GRADIENT,
-        VAR_D_INFILL,
-        VAR_D_LEVELTR,
-        VAR_D_LINK,
-        VAR_D_LOC,
-        VAR_D_LOOP,
-        VAR_D_LRBG,
-        VAR_D_LX,
-        VAR_D_MAMODE,
-        VAR_D_NVOVTRP,
-        VAR_D_NVPOTRP,
-        VAR_D_NVROLL,
-        VAR_D_NVSTFF,
-        VAR_D_OL,
-        VAR_D_PBD,
-        VAR_D_PBDSR,
-        VAR_D_POSOFF,
-        VAR_D_RBCTR,
-        VAR_D_REF,
-        VAR_D_REVERSE,
-        VAR_D_SECTIONTIMERSTOPLOC,
-        VAR_D_SR,
-        VAR_D_STARTOL,
-        VAR_D_STARTREVERSE,
-        VAR_D_STATIC,
-        VAR_D_SUITABILITY,
-        VAR_D_TAFDISPLAY,
-        VAR_D_TEXTDISPLAY,
-        VAR_D_TRACKINIT,
-        VAR_D_TRACKCOND,
-        VAR_D_TRACTION,
-        VAR_D_TSR,
-        VAR_D_VALIDNV,
-        VAR_G_A,
-        VAR_G_PBDSR,
-        VAR_G_TSR,
-        VAR_L_ACKLEVELTR,
-        VAR_L_ACKMAMODE,
-        VAR_L_ADHESION,
-        VAR_L_AXLELOAD,
-        VAR_L_CONSISTFRONTENGINEMAX,
-        VAR_L_CONSISTFRONTENGINEMIN,
-        VAR_L_CONSISTFRONTENGINENOM,
-        VAR_L_CONSISTREARENGINEMAX,
-        VAR_L_CONSISTREARENGINEMIN,
-        VAR_L_CONSISTREARENGINENOM,
-        VAR_L_DOUBTOVER,
-        VAR_L_DOUBTUNDER,
-        VAR_L_ENDSECTION,
-        VAR_L_LOOP,
-        VAR_L_LX,
-        VAR_L_MAMODE,
-        VAR_L_MESSAGE,
-        VAR_L_NVKRINT,
-        VAR_L_PACKET,
-        VAR_L_PBDSR,
-        VAR_L_REVERSEAREA,
-        VAR_L_SECTION,
-        VAR_L_STOPLX,
-        VAR_L_TAFDISPLAY,
-        VAR_L_TEXT,
-        VAR_L_TEXTDISPLAY,
-        VAR_L_TRACKCOND,
-        VAR_L_TRAIN,
-        VAR_L_TRAININT,
-        VAR_L_TSR,
-        VAR_M_ACK,
-        VAR_M_ADHESION,
-        VAR_M_AIRTIGHT,
-        VAR_M_AXLELOADCAT,
-        VAR_M_CURRENT,
-        VAR_M_DUP,
-        VAR_M_ERROR,
-        VAR_M_LEVEL,
-        VAR_M_LEVELTEXTDISPLAY,
-        VAR_M_LEVELTR,
-        VAR_M_LINEGAUGE,
-        VAR_M_LINEAXLELOADCAT,
-        VAR_M_LOADINGGAUGE,
-        VAR_M_LOC,
-        VAR_M_MAMODE,
-        VAR_M_MCOUNT,
-        VAR_M_MODE,
-        VAR_M_MODE_V1, // v1 + v2
-        VAR_M_MODETEXTDISPLAY,
-        VAR_M_NVAVADH,
-        VAR_M_NVCONTACT,
-        VAR_M_NVDERUN,
-        VAR_M_NVEBCL,
-        VAR_M_NVKRINT,
-        VAR_M_NVKTINT,
-        VAR_M_NVKVINT,
-        VAR_M_PLATFORM,
-        VAR_M_POSITION,
-        VAR_M_POSITION_V1, // v1
-        VAR_M_TRACKCOND,
-        VAR_M_VOLTAGE,
-        VAR_M_VERSION,
-        VAR_N_AXLE,
-        VAR_N_ITER,
-        VAR_N_PIG,
-        VAR_N_TOTAL,
-        VAR_NC_CDDIFF,
-        VAR_NC_CDTRAIN,
-        VAR_NC_DIFF,
-        VAR_NC_TRAIN,
-        VAR_NID_BG,
-        VAR_NID_C,
-        VAR_NID_CTRACTION,
-        VAR_NID_EM,
-        VAR_NID_ENGINE,
-        VAR_NID_LOOP,
-        VAR_NID_LRBG,
-        VAR_NID_LTRBG,
-        VAR_NID_LX,
-        VAR_NID_MESSAGE,
-        VAR_NID_MN,
-        VAR_NID_OPERATIONAL,
-        VAR_NID_PACKET,
-        VAR_NID_PRVLRBG,
-        VAR_NID_RADIO,
-        VAR_NID_RBC,
-        VAR_NID_RIU,
-        VAR_NID_NTC,
-        VAR_NID_TEXTMESSAGE,
-        VAR_NID_TSR,
-        VAR_NID_VBCMK,
-        VAR_NID_XUSER,
-        VAR_Q_ASPECT,
-        VAR_Q_CONFTEXTDISPLAY,
-        VAR_Q_DANGERPOINT,
-        VAR_Q_DIFF,
-        VAR_Q_DESK,
-        VAR_Q_DIR,
-        VAR_Q_DIRLRBG,
-        VAR_Q_DIRTRAIN,
-        VAR_Q_DLRBG,
-        VAR_Q_EMERGENCYSTOP,
-        VAR_Q_ENDTIMER,
-        VAR_Q_FRONT,
-        VAR_Q_GDIR,
-        VAR_Q_INFILL,
-        VAR_Q_INTEGRITY,
-        VAR_Q_SAFECONSISTLENGTH,
-        VAR_Q_LGTLOC,
-        VAR_Q_LINK,
-        VAR_Q_LOCACC,
-        VAR_Q_LINKORIENTATION,
-        VAR_Q_LINKREACTION,
-        VAR_Q_LOOPDIR,
-        VAR_Q_LSSMA,
-        VAR_Q_LXSTATUS,
-        VAR_Q_MAMODE,
-        VAR_Q_MARQSTREASON,
-        VAR_Q_MEDIA,
-        VAR_Q_MPOSITION,
-        VAR_Q_NETWORKTYPE,
-        VAR_Q_NEWCOUNTRY,
-        VAR_Q_NVDRIVER_ADHES,
-        VAR_Q_NVEMRRLS,
-        VAR_Q_NVGUIPERM,
-        VAR_Q_NVINHSMICPERM,
-        VAR_Q_NVKINT,
-        VAR_Q_NVKVINTSET,
-        VAR_Q_NVLOCACC,
-        VAR_Q_NVSBFBPERM,
-        VAR_Q_NVSBTSMPERM,
-        VAR_Q_ORIENTATION,
-        VAR_Q_OVERLAP,
-        VAR_Q_PBDSR,
-        VAR_Q_PLATFORM,
-        VAR_Q_RBC,
-        VAR_Q_RIU,
-        VAR_Q_SCALE,
-        VAR_Q_SECTIONTIMER,
-        VAR_Q_SLEEPSESSION,
-        VAR_Q_SRSTOP,
-        VAR_Q_SSCODE,
-        VAR_Q_STATUSLRBG,
-        VAR_Q_STOPLX,
-        VAR_Q_SUITABILITY,
-        VAR_Q_TEXT,
-        VAR_Q_TEXTCLASS,
-        VAR_Q_TEXTCONFIRM,
-        VAR_Q_TEXTDISPLAY,
-        VAR_Q_TEXTREPORT,
-        VAR_Q_TRACKINIT,
-        VAR_Q_UPDOWN,
-        VAR_Q_VBCO,
-        VAR_T_CYCLOC,
-        VAR_T_CYCRQST,
-        VAR_T_LSSMA,
-        VAR_T_ENDTIMER,
-        VAR_T_EMA,
-        VAR_T_MAR,
-        VAR_T_NVCONTACT,
-        VAR_T_NVOVTRP,
-        VAR_T_OL,
-        VAR_T_SECTIONTIMER,
-        VAR_T_TEXTDISPLAY,
-        VAR_T_TIMEOUTRQST,
-        VAR_T_TRAIN,
-        VAR_T_VBC,
-        VAR_V_AXLELOAD,
-        VAR_V_DIFF,
-        VAR_V_EMA,
-        VAR_V_LX,
-        VAR_V_MAIN,
-        VAR_V_MAMODE,
-        VAR_V_MAXTRAIN,
-        VAR_V_NVALLOWOVTRP,
-        VAR_V_NVKVINT,
-        VAR_V_NVLIMSUPERV,
-        VAR_V_NVONSIGHT,
-        VAR_V_NVSUPOVTRP,
-        VAR_V_NVREL,
-        VAR_V_NVSHUNT,
-        VAR_V_NVSTFF,
-        VAR_V_NVUNFIT,
-        VAR_V_RELEASEDP,
-        VAR_V_RELEASEOL,
-        VAR_V_REVERSE,
-        VAR_V_SM,
-        VAR_V_STATIC,
-        VAR_V_TRAIN,
-        VAR_V_TSR,
-        VAR_X_TEXT,
-        VAR_M_AXLELOAD_V1, // v1
-        VAR_M_TRACKCONDBC_V1, // v1
-        VAR_M_TRACTION_V1, // v1
-        VAR_Q_TRACKDEL_V1, // v1
-} variable_type;
+#include "etcs-common.h"
 
 #define DEF_VAR(name, size) { name , ( size ), 0, "etcs.var." name, NULL, NULL, NULL }
 
 #define DEF_VAR_CUSTOM(name, size, registrator, dissect, dissect_ret) { name , ( size ), 0, "etcs.var." name, registrator, dissect, dissect_ret }
+
+static void register_var_generic(etcs_variable_t *var, hf_register_info *destination);
+
+static void register_var(etcs_variable_t *var, hf_register_info *destination);
 
 static proto_item *dissect_var_ret_x_text(const etcs_variable_t self, tvbuff_t *tvb, proto_tree *tree, unsigned *offset,
                                           uint64_t *return_value) {
@@ -294,7 +51,7 @@ static proto_item *dissect_var_ret_m_version(const etcs_variable_t self, tvbuff_
 }
 
 /**
- * This must be kept in sync with the enumeration above.
+ * This must be kept in sync with the enumeration in etcs-vars.h.
  */
 static etcs_variable_t etcs_variables[] = {
         DEF_VAR("A_NVMAXREDADH1", 6),
@@ -542,4 +299,40 @@ static etcs_variable_t etcs_variables[] = {
         DEF_VAR("Q_TRACKDEL", 1), // v1
 };
 
-#define VAR(name) (etcs_variables[ VAR_ ##name ])
+etcs_variable_t etcs_var_by_enum(const etcs_var_enum_t var) {
+        return etcs_variables[var];
+}
+
+void etcs_register_variables(const int proto) {
+        static hf_register_info hf[array_length(etcs_variables)];
+        int hf_index = 0;
+        for (size_t i = 0; i < array_length(etcs_variables); i++) {
+                etcs_variable_t *var = &etcs_variables[i];
+                register_var(var, &hf[hf_index++]);
+        }
+        proto_register_field_array(proto, hf, array_length(hf));
+}
+
+static void register_var(etcs_variable_t *var, hf_register_info *destination) {
+        if (var->register_field == NULL) {
+                register_var_generic(var, destination);
+                return;
+        }
+        var->register_field(var, destination);
+}
+
+static void register_var_generic(etcs_variable_t *var, hf_register_info *destination) {
+        *destination = (hf_register_info){
+                &var->wireshark_hf,
+                {
+                        var->abbreviation,
+                        var->wireshark_abbreviation,
+                        FT_UINT64,
+                        BASE_DEC,
+                        NULL,
+                        0x0,
+                        NULL,
+                        HFILL
+                }
+        };
+}
