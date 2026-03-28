@@ -5,11 +5,13 @@ plugins {
 // The "ucanaccess" library is an "automatic" module, but Gradle doesn't seem
 // to offer direct support for that.
 tasks.named<JavaCompile>("compileJava") {
-    options.compilerArgs.addAll(
-        listOf(
-            "--module-path", classpath.asPath
+    doFirst {
+        options.compilerArgs.addAll(
+            listOf(
+                "--module-path", classpath.asPath
+            )
         )
-    )
+    }
 }
 tasks.named<Javadoc>("javadoc") {
     options.modulePath(classpath.files.toList())
